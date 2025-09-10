@@ -6,8 +6,7 @@ from ultralytics import YOLO
 from fusion_stabilizer import FallStabilizer
 from notifier import Notifier
 
-# ========= 사용자 설정 =========
-USE_STGCN = False  # False로 1번, True로 1번 돌려서 전/후 비교
+USE_STGCN = False 
 MODEL_PATH = "/home/sung/runs/detect/train15/weights/best.pt"  # ← 자신의 best.pt 경로로 수정 가능 (또는 "yolov8s.pt")
 SOURCE = 0         # 0=웹캠, 또는 "video.mp4"
 IMG_SIZE = 896
@@ -15,7 +14,6 @@ CONF_THRES = 0.25
 FALLEN_CLASS_IDX = 0  # data.yaml의 names에서 fallen_person의 인덱스
 COOLDOWN_S = 8        # 같은 트랙 알림 쿨다운(초)
 FPS_FALLBACK = 30
-# =============================
 
 # --- 트래커 임포트 (ByteTrack 우선, 실패 시 StrongSORT로 대체) ---
 TRACKER_NAME = "ByteTrack"
@@ -165,6 +163,22 @@ def main():
         cv2.imshow("demo", frame)
         if (cv2.waitKey(1) & 0xFF) == ord('q'):
             break
+
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):
+            break
+        elif key == ord('s'):  # start of fall
+            with open("logs/markers.csv", "a") as f:
+                f.write(f"{app_run.SOURCE},{ts:.3f},start\n")
+            print("[GT] start @", ts)
+        elif key == ord('e'):  # end of fall
+            with open("logs/markers.csv", "a") as f:
+                f.write(f"{app_run.SOURCE},{ts:.3f},end\n")
+            print("[GT] end @", ts)
+        elif key == ord('n'):  # non-fall notable action (헷갈리는 동작)
+            with open("logs/markers.csv", "a") as f:
+                f.write(f"{app_run.SOURCE},{ts:.3f},nonfall\n")
+            print("[GT] nonfall @", ts)
 
     logf.close()
     cap.release()
