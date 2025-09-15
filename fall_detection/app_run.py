@@ -6,11 +6,11 @@ from ultralytics import YOLO
 from fusion_stabilizer import FallStabilizer
 from notifier import Notifier
 
-USE_STGCN = False 
-MODEL_PATH = "/home/sung/runs/detect/train15/weights/best.pt"  # ← 자신의 best.pt 경로로 수정 가능 (또는 "yolov8s.pt")
+USE_STGCN = True
+MODEL_PATH = "/home/sung/runs/detect/train15/weights/best.pt"  
 SOURCE = 0         # 0=웹캠, 또는 "video.mp4"
 IMG_SIZE = 896
-CONF_THRES = 0.25
+CONF_THRES = 0.50
 FALLEN_CLASS_IDX = 0  # data.yaml의 names에서 fallen_person의 인덱스
 COOLDOWN_S = 8        # 같은 트랙 알림 쿨다운(초)
 FPS_FALLBACK = 30
@@ -82,14 +82,22 @@ def main():
             tracker = _Tracker()
 
     # 4) 안정화/발송 모듈
-    stab = FallStabilizer(tau_on=0.7, tau_off=0.4, min_frames=8, still_sec=1.0, ema=0.8, fps=fps)
+    # FallStabilizer 초기화 부분
+    stab = FallStabilizer(
+    tau_on=0.85,   # 0.7 → 0.85 : 경보 올라가는 임계 올림
+    tau_off=0.4,
+    min_frames=12, # 8 → 12 : 최소 유지 프레임 증가
+    still_sec=1.5, # 1.0 → 1.5 : 쓰러진 뒤 정지 시간 길게
+    ema=0.8, fps=fps
+    )   
+
     notifier = Notifier(webhook_url=None, cooldown_s=COOLDOWN_S)
 
     # 5) (옵션) ST-GCN
     stgcn = None
     if USE_STGCN:
         try:
-            from events.stgcn_infer import STGCNInfer
+            from events.events.stgcn_infer import STGCNInfer
             stgcn = STGCNInfer()  # 내부에서 트랙별 포즈 버퍼링 후 확률 반환
         except Exception as e:
             print(f"[WARN] ST-GCN unavailable ({e}); running without.")
@@ -145,6 +153,12 @@ def main():
 
             # 안정화/결정
             trigger, R, still = stab.update(int(tid), p_state, p_event, xyxy)
+
+            # 게이트 강화 (수치부터 보수적으로 시작)
+            if p_state < 0.55:
+                trigger = False
+            if stgcn is not None and p_event < 0.60:
+                trigger = False
 
             # 시각화
             cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
