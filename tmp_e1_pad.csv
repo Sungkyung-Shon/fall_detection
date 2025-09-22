@@ -1,0 +1,5 @@
+video_id,track_id,t_start,t_end,score,label
+/home/sung/fall_detection/datasets/gmdcsa24/Subject 3/Fall/01.mp4,3,1.2143333333333333,2.0181666666666667,0.422631036191507,1
+/home/sung/fall_detection/datasets/gmdcsa24/Subject 3/Fall/01.mp4,6,2.7661000000000002,3.57,0.4035651270649151,1
+/home/sung/fall_detection/datasets/gmdcsa24/Subject 3/Fall/01.mp4,6,2.0300000000000002,2.4339666666666666,0.401870743275563,1
+/home/sung/fall_detection/datasets/gmdcsa24/Subject 3/Fall/01.mp4,8,2.1901,3.7622,0.4232351538187899,1

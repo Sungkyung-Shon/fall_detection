@@ -1,0 +1,2 @@
+[no_stgcn] n=4 | score median=0.790, p90=0.858, max=0.863 | dur median=1.25s
+[with_stgcn] n=4 | score median=0.413, p90=0.423, max=0.423 | dur median=0.70s
