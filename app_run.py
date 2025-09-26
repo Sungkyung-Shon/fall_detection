@@ -186,7 +186,8 @@ def main():
                 seq_len=args.stgcn_seq_len, min_buf=args.stgcn_min_buf,
                 imgsz=args.stgcn_imgsz, pose_conf=args.stgcn_pose_conf,
                 pose_model_path="events/yolov8n-pose.pt",   # ← 요거 추가
-                verbose=True
+                #verbose=True #[STGCN-DBG] tid=… kpts_n=… crop=.. 출력
+                verbose=False
             )
 
         except Exception as e:
@@ -268,6 +269,13 @@ def main():
             xyxy_track = (float(x1), float(y1), float(x2), float(y2))
             xyxy_crop  = expand_box(xyxy_track, args.stgcn_box_expand, W, H)
 
+            print(
+                # f"[BOX] ts={ts:.3f} frame={int(cap.get(cv2.CAP_PROP_POS_FRAMES))} "
+                # f"tid={int(tid)} bbox(x1,y1,x2,y2)=({float(x1):.1f}, {float(y1):.1f}, {float(x2):.1f}, {float(y2):.1f})",
+                f"bbox(x1,y1,x2,y2)=({float(x1):.1f}, {float(y1):.1f}, {float(x2):.1f}, {float(y2):.1f})",
+                flush=True
+    )
+
             os.makedirs("debug_crops", exist_ok=True)
             x1c, y1c, x2c, y2c = map(int, xyxy_crop)
             x1c = max(0, x1c); y1c = max(0, y1c); x2c = min(W-1, x2c); y2c = min(H-1, y2c)
@@ -298,7 +306,8 @@ def main():
                     buf_len = len(seq) if seq is not None else 0
 
                     if buf_len % 6 == 0:
-                        print(f"[DBG] tid={int(tid)} buf={buf_len} p_event={p_event:.3f}")
+                        # print(f"[DBG] tid={int(tid)} buf={buf_len} p_event={p_event:.3f}")
+                        print(f"tid={int(tid)} p_event={p_event:.3f}")
                 except Exception:
                     print("[ST-GCN ERROR]\n" + traceback.format_exc())
                     p_event = 0.0
