@@ -1,4 +1,3 @@
-# events/train_stgcn.py
 import os, glob, argparse, random, numpy as np
 import torch, torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
